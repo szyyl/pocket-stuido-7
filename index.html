@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pocket Studio AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- 模块一：全局相机预览 -->
+        <main id="camera-module" class="active">
+            <div class="video-container">
+                <video id="camera-preview" autoplay playsinline muted></video>
+                
+                <!-- 顶部浮动双模式切换 (叠加于预览上方) -->
+                <div class="top-overlay-toggle">
+                    <button class="overlay-tab active">拍单图</button>
+                    <button class="overlay-tab">拍多图</button>
+                </div>
+
+                <!-- 预设的参考线（例如：餐饮美食俯拍遮罩） -->
+                <div id="composition-overlay" class="hidden">
+
+                    <div class="composition-grid">
+                        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    </div>
+                    <!-- 变焦控制 -->
+                <div class="zoom-controls">
+                    <div class="zoom-btn">.6</div>
+                    <div class="zoom-btn active">1x</div>
+                    <div class="zoom-btn">2</div>
+                    <div class="zoom-btn">3</div>
+                </div>
+            </div>
+
+                <!-- 水平仪 (默认隐藏) -->
+                <div id="leveler-overlay" class="hidden">
+
+                    <div id="leveler-line" class="leveler-line"></div>
+                    <div class="leveler-center">
+                        <div class="leveler-cross"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- UI 叠加层 -->
+            <div class="camera-ui">
+                <!-- 顶部栏 -->
+                <div class="top-bar">
+                    <button class="icon-btn transparent-btn" onclick="showTip('智能识图目前不可用')">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                    <button class="icon-btn transparent-btn" id="btn-leveler" onclick="toggleLeveler()">
+                        <i class="fa-solid fa-arrows-to-circle"></i>
+                    </button>
+                    <div class="top-center-pill">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <button class="icon-btn transparent-btn" onclick="showTip('AI滤镜')">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                    <button class="icon-btn transparent-btn" onclick="showTip('画幅切换')">
+                        <i class="fa-solid fa-crop-simple"></i>
+                    </button>
+                </div>
+
+
+                <div id="toast-tip" class="hidden"></div>
+                
+                <!-- 场景模式切换 (现在在取景框下方) -->
+                <div class="mode-selector-container">
+                    <div class="mode-tabs">
+                        <button class="mode-tab" onclick="switchMode(this)">AI艺术馆</button>
+                        <button class="mode-tab" onclick="switchMode(this)">视频</button>
+                        <button class="mode-tab active" onclick="switchMode(this)">Pocket Studio</button>
+                        <button class="mode-tab" onclick="switchMode(this)">FlashSnap</button>
+                        <button class="mode-tab" onclick="switchMode(this)">人像</button>
+                    </div>
+                    <button class="icon-btn transparent-btn menu-btn">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                </div>
+
+
+                
+                <!-- 提示层 -->
+                <div id="status-badge" class="hidden">
+                    <i class="fa-solid fa-leaf"></i> <span>已开启微距模式</span>
+                </div>
+
+                <!-- 侧边栏展开项目 (功能矩阵) -->
+                <div class="sidebar-container">
+                    <button class="sidebar-collapse-btn">
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </button>
+                    <div class="sidebar-scroll-area">
+                        <div class="sidebar-item" onclick="showTip('一键美化')">
+                            <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1512496015851-a1c8f13010b4?w=100&q=80" alt="美化"></div>
+                            <span>一键美化</span>
+                        </div>
+                        <div class="sidebar-item" onclick="showTip('场景图')">
+                            <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1627384113743-6bd5a479fffd?w=100&q=80" alt="场景"></div>
+                            <span>场景图</span>
+                        </div>
+                        <div class="sidebar-item" onclick="showTip('白底图')">
+                            <div class="sidebar-icon" style="background:#fff;"><img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80" alt="白底" style="mix-blend-mode: multiply;"></div>
+                            <span>白底图</span>
+                        </div>
+                        <div class="sidebar-item" onclick="showTip('模特图')">
+                            <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80" alt="模特"></div>
+                            <span>模特图</span>
+                        </div>
+                        <div class="sidebar-item" onclick="showTip('营销海报')">
+                            <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=100&q=80" alt="海报"></div>
+                            <span>营销海报</span>
+                        </div>
+                        <div class="sidebar-item" onclick="showTip('产品识别')">
+                            <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&q=80" alt="识别"></div>
+                            <span>产品识别</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- 底部操作栏 -->
+                <div class="bottom-bar">
+                    <button class="history-btn circle-btn" onclick="openChat()">
+                        <i class="fa-solid fa-comments"></i>
+                    </button>
+                    
+                    <div class="shutter-wrapper" onclick="takePhoto()">
+                        <button id="btn-shutter">
+                            <div class="shutter-inner"></div>
+                        </button>
+                        <div class="scan-ring hidden"></div>
+                    </div>
+
+                    <button class="reference-img-btn circle-btn" onclick="showTip('添加参考图')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- 模块二：聊天/生图交流模块 -->
+        <section id="chat-module">
+            <div class="chat-header">
+                <button class="icon-btn" onclick="backToCamera()">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <span class="chat-title">AI 商拍创作中心</span>
+                <button class="icon-btn">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </div>
+            
+            <div id="chat-stream">
+                <div class="chat-message ai-message">
+                    <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="bubble">已为您准备好影棚环境。请对准商品进行拍摄，支持后续多轮修图哦。</div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chips-container" id="chat-chips">
+                    <div class="chip" onclick="applyChip(this)">换背景为空白</div>
+                    <div class="chip" onclick="applyChip(this)">增加金属质感</div>
+                    <div class="chip" onclick="applyChip(this)">添加倒影效果</div>
+                    <div class="chip" onclick="applyChip(this)">主图居中放大</div>
+                </div>
+                <div class="input-box-wrapper">
+                    <button class="icon-btn secondary"><i class="fa-solid fa-microphone"></i></button>
+                    <div class="input-container">
+                        <input type="text" id="chat-input" placeholder="输入修改指令，如“换个海滩背景”...">
+                        <button class="icon-btn send-btn primary-glow" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 闪光白屏过渡层 -->
+        <div id="flash-overlay"></div>
+        <canvas id="photo-canvas" class="hidden"></canvas>
+        <img id="transition-img" class="hidden">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
