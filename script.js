@@ -6,6 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chat-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendMessage();
     });
+    // handle image upload
+    document.getElementById('ref-image-upload').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                handleRefImage(event.target.result);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
 });
 
 let currentMode = 'single';
@@ -51,10 +61,10 @@ function toggleLeveler() {
     
     if (!overlay.classList.contains('hidden')) {
         btn.classList.add('highlight');
-        btn.querySelector('i').style.color = '#ffcc00';
+        btn.querySelector('svg').style.stroke = ''; // Keep white
     } else {
         btn.classList.remove('highlight');
-        btn.querySelector('i').style.color = '';
+        btn.querySelector('svg').style.stroke = '';
     }
 }
 
@@ -353,4 +363,87 @@ function appendDemoResult() {
             appendTextMessage("出图啦！这是初步的效果。如果您对光影或倒影不满意，可以继续让我调整。", 'ai');
         }, 800);
     }, 2000);
+}
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = sidebar.querySelector('.sidebar-collapse-btn');
+    const icon = btn.querySelector('i');
+    
+    sidebar.classList.toggle('collapsed');
+    
+    if (sidebar.classList.contains('collapsed')) {
+        icon.className = 'fa-solid fa-chevron-down';
+    } else {
+        icon.className = 'fa-solid fa-chevron-up';
+    }
+}
+function handleRefImage(src) {
+    showTip('参考图已添加');
+    
+    // Smooth transition to chat
+    setTimeout(() => {
+        cameraModule.classList.add('shrinked');
+        chatModule.classList.add('active');
+        
+        appendTextMessage("我上传了一张参考图，请按照这个风格进行后续创作。", 'user');
+        
+        const msg = document.createElement('div');
+        msg.className = 'chat-message user-message';
+        msg.innerHTML = `
+            <div class="avatar"><i class="fa-solid fa-user"></i></div>
+            <div class="image-bubble"><img src="${src}" alt="Reference"></div>
+        `;
+        chatStream.appendChild(msg);
+        scrollToBottom();
+        
+        const typing = addTypingIndicator();
+        setTimeout(() => {
+            typing.remove();
+            appendTextMessage("收到！已识别参考图风格。请拍摄您的商品，我将以此风格为您生成大片。", 'ai');
+        }, 1500);
+    }, 500);
+}
+
+const templatePrompts = {
+    '一键美化': '专业商业摄影布光，皮肤质感增强，高保真画质，极致通透感',
+    '场景图': '高端商用场景，写实环境模拟，电影级光影，8K超清画质',
+    '白底图': '纯净白底，专业电商影棚构图，无阴影处理，产品主体突出',
+    '模特图': 'AI真人模特展示，专业摆拍，时尚摄影风格，高级目录视觉',
+    '营销海报': '创意广告海报风格，色彩明快，构图考究，极具视觉冲击力',
+    '产品识别': '智能产品特征识别，核心卖点标注，技术参数视觉化呈现'
+};
+
+function selectSidebarItem(el, name) {
+    // Remove active class from all items
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked item
+    el.classList.add('active');
+    
+    showTip(`已选择：${name}`);
+    
+    // Transition to chat and start generation
+    const prompt = templatePrompts[name] || `正在处理：${name}`;
+    
+    setTimeout(() => {
+        // Switch to chat module
+        cameraModule.classList.add('shrinked');
+        chatModule.classList.add('active');
+        
+        // User message
+        appendTextMessage(`应用模板：${name}`, 'user');
+        
+        // AI Response flow
+        const typing = addTypingIndicator();
+        setTimeout(() => {
+            typing.remove();
+            appendTextMessage(`收到！已根据 [${name}] 模版调取对应提示词：\n\n"${prompt}"\n\n正在为您生成大片，请稍候...`, 'ai');
+            
+            setTimeout(() => {
+                appendDemoResult();
+            }, 1500);
+        }, 1200);
+    }, 800);
 }

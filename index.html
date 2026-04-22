@@ -57,13 +57,16 @@
                         <i class="fa-solid fa-expand"></i>
                     </button>
                     <button class="icon-btn transparent-btn" id="btn-leveler" onclick="toggleLeveler()">
-                        <i class="fa-solid fa-arrows-to-circle"></i>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="7" width="18" height="10" rx="2" />
+                            <line x1="12" y1="3" x2="12" y2="21" />
+                        </svg>
                     </button>
                     <div class="top-center-pill">
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <button class="icon-btn transparent-btn" onclick="showTip('AI滤镜')">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <button class="icon-btn transparent-btn" onclick="showTip('常亮灯')">
+                        <i class="fa-solid fa-lightbulb"></i>
                     </button>
                     <button class="icon-btn transparent-btn" onclick="showTip('画幅切换')">
                         <i class="fa-solid fa-crop-simple"></i>
@@ -95,32 +98,32 @@
                 </div>
 
                 <!-- 侧边栏展开项目 (功能矩阵) -->
-                <div class="sidebar-container">
-                    <button class="sidebar-collapse-btn">
+                <div class="sidebar-container" id="sidebar">
+                    <button class="sidebar-collapse-btn" onclick="toggleSidebar()">
                         <i class="fa-solid fa-chevron-up"></i>
                     </button>
                     <div class="sidebar-scroll-area">
-                        <div class="sidebar-item" onclick="showTip('一键美化')">
-                            <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1512496015851-a1c8f13010b4?w=100&q=80" alt="美化"></div>
+                        <div class="sidebar-item" onclick="selectSidebarItem(this, '一键美化')">
+                            <div class="sidebar-icon"><img src="assets/beautify.png" alt="美化"></div>
                             <span>一键美化</span>
                         </div>
-                        <div class="sidebar-item" onclick="showTip('场景图')">
+                        <div class="sidebar-item" onclick="selectSidebarItem(this, '场景图')">
                             <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1627384113743-6bd5a479fffd?w=100&q=80" alt="场景"></div>
                             <span>场景图</span>
                         </div>
-                        <div class="sidebar-item" onclick="showTip('白底图')">
+                        <div class="sidebar-item" onclick="selectSidebarItem(this, '白底图')">
                             <div class="sidebar-icon" style="background:#fff;"><img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80" alt="白底" style="mix-blend-mode: multiply;"></div>
                             <span>白底图</span>
                         </div>
-                        <div class="sidebar-item" onclick="showTip('模特图')">
+                        <div class="sidebar-item" onclick="selectSidebarItem(this, '模特图')">
                             <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80" alt="模特"></div>
                             <span>模特图</span>
                         </div>
-                        <div class="sidebar-item" onclick="showTip('营销海报')">
+                        <div class="sidebar-item" onclick="selectSidebarItem(this, '营销海报')">
                             <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=100&q=80" alt="海报"></div>
                             <span>营销海报</span>
                         </div>
-                        <div class="sidebar-item" onclick="showTip('产品识别')">
+                        <div class="sidebar-item" onclick="selectSidebarItem(this, '产品识别')">
                             <div class="sidebar-icon"><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&q=80" alt="识别"></div>
                             <span>产品识别</span>
                         </div>
@@ -141,9 +144,10 @@
                         <div class="scan-ring hidden"></div>
                     </div>
 
-                    <button class="reference-img-btn circle-btn" onclick="showTip('添加参考图')">
+                    <button class="reference-img-btn circle-btn" onclick="triggerImgUpload()">
                         <i class="fa-solid fa-plus"></i>
                     </button>
+                    <input type="file" id="ref-image-upload" accept="image/*" class="hidden">
                 </div>
 
             </div>
@@ -169,17 +173,22 @@
             </div>
 
             <div class="chat-input-area">
-                <div class="chips-container" id="chat-chips">
-                    <div class="chip" onclick="applyChip(this)">换背景为空白</div>
-                    <div class="chip" onclick="applyChip(this)">增加金属质感</div>
-                    <div class="chip" onclick="applyChip(this)">添加倒影效果</div>
-                    <div class="chip" onclick="applyChip(this)">主图居中放大</div>
+                <div class="quick-chips">
+                    <div class="chip" onclick="applyChip(this)">
+                        <i class="fa-regular fa-star"></i> 生成创意海报
+                    </div>
+                    <div class="chip" onclick="applyChip(this)">
+                        <i class="fa-regular fa-file-lines"></i> 生成产品介绍
+                    </div>
+                    <div class="chip" onclick="applyChip(this)">
+                        <i class="fa-regular fa-comment"></i> 生成社媒文案
+                    </div>
                 </div>
-                <div class="input-box-wrapper">
-                    <button class="icon-btn secondary"><i class="fa-solid fa-microphone"></i></button>
-                    <div class="input-container">
-                        <input type="text" id="chat-input" placeholder="输入修改指令，如“换个海滩背景”...">
-                        <button class="icon-btn send-btn primary-glow" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
+                <div class="input-container-v2">
+                    <input type="text" id="chat-input" placeholder="发消息或按住说话...">
+                    <div class="input-actions">
+                        <button class="action-btn-v2 mic-btn"><i class="fa-solid fa-microphone"></i></button>
+                        <button class="action-btn-v2 plus-btn" onclick="triggerImgUpload()"><i class="fa-solid fa-plus"></i></button>
                     </div>
                 </div>
             </div>
